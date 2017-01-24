@@ -1,11 +1,16 @@
 {
-  "name": "nightmare",
+  "name": "bankapi-bancoestado-empresas",
   "version": "1.0.0",
-  "description": "",
+  "description": "Crawl bancoestado-empresas and retrieve data",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC"
+  "author": "Jaime Echegaray Zipper",
+  "license": "ISC",
+  "dependencies": {
+    "co": "^4.6.0",
+    "nightmare": "^2.9.1",
+    "nightmare-iframe-manager": "0.0.4"
+  }
 }
