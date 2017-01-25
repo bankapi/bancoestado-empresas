@@ -17,9 +17,12 @@ let month = date.getMonth() > 8 ? date.getMonth() + 1 : '0' + (date.getMonth() +
 let day = date.getDate() > 9 ? date.getDate() : '0' + date.getDate()
 let today = day + '/' + month + '/' + date.getFullYear()
 
+// transaction type
+let transactionType = 'outgoing'
+
 nightmare.on('download', function (state, downloadItem) {
   if (state === 'started') {
-    nightmare.emit('download', path.resolve('./downloads') + '/' + _.now() + '.html', downloadItem)
+    nightmare.emit('download', path.resolve('./downloads') + '/' + transactionType + '/' + _.now() + '.html', downloadItem)
   }
 })
 
@@ -113,11 +116,12 @@ let ender = function* () {
 // run generators
 co(login)
 .then(() => {
-  co(getTransactions('outgoing'))
+  co(getTransactions(transactionType))
   .then((result) => {
     co(downloadTransactions(result))
     .then(() => {
-      co(getTransactions('incoming'))
+      transactionType = 'incoming'
+      co(getTransactions(transactionType))
       .then((result) => {
         co(downloadTransactions(result))
         .then(() => {
