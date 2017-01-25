@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "co": "^4.6.0",
+    "lodash": "^4.17.4",
     "nightmare": "^2.9.1",
     "nightmare-iframe-manager": "0.0.4"
   }
