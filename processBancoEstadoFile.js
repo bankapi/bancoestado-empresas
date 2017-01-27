@@ -67,7 +67,7 @@ tr.selectAll('td .c3', function (el) {
 
 function processBancoEstadoFile (fileName) {
   return new Promise(function (resolve, reject) {
-    fs.createReadStream(path.resolve('./downloads/outgoing/' + fileName)).pipe(tr)
+    fs.createReadStream(path.resolve('./downloads/' + fileName)).pipe(tr)
     // Here we listen to the end of file
     .on('end', () => {
       resolve({
