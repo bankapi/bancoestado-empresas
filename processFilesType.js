@@ -4,6 +4,7 @@ const lodash = require('lodash')
 const fs = require('fs')
 const path = require('path')
 const processBancoEstadoFile = require('./processBancoEstadoFile')
+const async = require('async')
 
 let processFilesType = function (type) {
   return new Promise(function (resolve, reject) {
@@ -15,17 +16,24 @@ let processFilesType = function (type) {
       if (err) {
         reject(err)
       } else {
-        console.log('files', files)
         if (lodash.isEmpty(files)) {
           resolve([])
         } else {
-          lodash.forEach(files, (file) => {
+          let result = []
+          async.each(files, (file, cb) => {
             processBancoEstadoFile(type + file)
             .then((txs) => {
-              resolve(txs)
+              result.push(txs)
+              cb()
             }, (e) => {
-              reject(e)
+              cb(e)
             })
+          }, (err) => {
+            if (err) {
+              reject(err)
+            } else {
+              resolve(result)
+            }
           })
         }
       }
