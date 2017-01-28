@@ -9,7 +9,7 @@ const through = require('through2')
 let transactions = []
 let accountData = {}
 let include = false
-let counter = 0
+let counter = 1
 let tx = {}
 
 function processBancoEstadoFile (fileName) {
@@ -26,10 +26,19 @@ function processBancoEstadoFile (fileName) {
         include = true
       }
       if (row[0] === 'close' && row[1] === '</html>') {
-        resolve({
+        // reset counter
+        counter = 1
+        // build response object
+        let result = {
+          fileName: fileName,
           accountData: accountData,
           transactions: transactions
-        })
+        }
+        // reset values
+        accountData = {}
+        transactions = []
+
+        resolve(result)
       }
       next()
     }))
