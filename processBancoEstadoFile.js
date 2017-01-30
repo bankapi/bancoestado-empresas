@@ -47,13 +47,14 @@ function processBancoEstadoFile (fileName) {
 
 function processData (data) {
   if (counter === 1) {
-    accountData.bank_account_holder_name = data
+    accountData.bankName = 'BANCO_ESTADO'
+    accountData.bankAccountHolderName = data
   }
   if (counter === 2) {
-    accountData.bank_account_holder_id = data.replace(/\./g, '')
+    accountData.bankAccountHolderId = data.replace(/\./g, '')
   }
   if (counter === 4) {
-    accountData.bank_account_number = data.replace(/-/g, '')
+    accountData.bankAccountNumber = data.replace(/-/g, '')
   }
   if (counter && counter % 7 === 0) {
     if (data === '&nbsp;') {
@@ -63,21 +64,21 @@ function processData (data) {
     }
   }
   if (counter && counter % 8 === 0) {
-    tx.bank_id = data
+    tx.bankId = data
   }
   if (counter && counter % 9 === 0) {
-    tx.amount = data.replace(/\./g, '')
+    tx.amount = lodash.toNumber(data.replace(/\./g, ''))
   }
   if (counter && counter % 10 === 0) {
-    tx.bank_name = data
+    tx.bankName = data
   }
   if (counter && counter % 11 === 0) {
     data = data.split(' ')
-    tx.bank_account_number = data.pop().replace(/-/g, '')
-    tx.bank_account_type = data.toString().replace(/,/g, ' ')
+    tx.bankAccountNumber = data.pop().replace(/-/g, '')
+    tx.bankAccountType = data.toString().replace(/,/g, ' ').toUpperCase()
   }
   if (counter && counter % 12 === 0) {
-    tx.bank_account_holder_id = data.replace(/\./g, '')
+    tx.bankAccountHolderId = data.replace(/\./g, '')
   }
   if (counter && counter % 13 === 0) {
     tx.state = data
