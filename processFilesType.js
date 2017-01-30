@@ -8,11 +8,11 @@ const async = require('async')
 
 let processFilesType = function (type) {
   return new Promise(function (resolve, reject) {
-    if (!(type === 'outgoing/' || type === 'incoming/')) {
+    if (!(type === 'outgoing' || type === 'incoming')) {
       reject(new Error('invalidFileType'))
     }
 
-    fs.readdir(path.resolve('./downloads/' + type), function (err, files) {
+    fs.readdir(path.resolve('./downloads/' + type + '/'), function (err, files) {
       if (err) {
         reject(err)
       } else {
@@ -21,7 +21,7 @@ let processFilesType = function (type) {
         } else {
           let result = []
           async.each(files, (file, cb) => {
-            processBancoEstadoFile(type + file)
+            processBancoEstadoFile(type, file)
             .then((txs) => {
               result.push(txs)
               cb()

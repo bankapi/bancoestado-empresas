@@ -12,14 +12,14 @@ let include = false
 let counter = 1
 let tx = {}
 
-function processBancoEstadoFile (fileName) {
+function processBancoEstadoFile (type, fileName) {
   return new Promise(function (resolve, reject) {
-    fs.createReadStream(path.resolve('./downloads/' + fileName))
+    fs.createReadStream(path.resolve('./downloads/' + type + '/' + fileName))
     .pipe(htmlTokenize())
     .pipe(through.obj(function (row, enc, next) {
       row[1] = row[1].toString()
       if (include) {
-        processData(row[1])
+        processData(row[1], type)
         include = false
       }
       if (row[0] === 'open' && row[1].includes('td class="c3"') && !row[1].includes('<!--')) {
@@ -45,7 +45,7 @@ function processBancoEstadoFile (fileName) {
   })
 }
 
-function processData (data) {
+function processData (data, fileType) {
   if (counter === 1) {
     accountData.bankName = 'BANCO_ESTADO'
     accountData.bankAccountHolderName = data
@@ -81,7 +81,12 @@ function processData (data) {
     tx.bankAccountHolderId = data.replace(/\./g, '')
   }
   if (counter && counter % 13 === 0) {
-    tx.state = data
+    if (data === 'Aprobada') {
+      tx.state = 'success'
+    } else {
+      tx.state = 'indeterminate'
+    }
+    tx.type = fileType
     // we need to copy the object otherwise the reference is maintained
     transactions.push(lodash.clone(tx))
   }
