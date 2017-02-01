@@ -2,6 +2,7 @@
 
 const users = require('./users')
 const apiKeys = require('./apikeys')
+const accounts = require('./accounts')
 
 let bind = function (controller, property) {
   module.exports[property] = controller
@@ -9,3 +10,4 @@ let bind = function (controller, property) {
 
 bind(users, 'users')
 bind(apiKeys, 'apiKeys')
+bind(accounts, 'accounts')
