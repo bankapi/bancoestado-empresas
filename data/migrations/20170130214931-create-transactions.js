@@ -10,7 +10,8 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       data: {
-        type: Sequelize.JSONB
+        type: Sequelize.JSONB,
+        unique: true
       },
       createdAt: {
         allowNull: false,
