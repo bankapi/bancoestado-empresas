@@ -13,9 +13,9 @@ function findOrUpdate (opts) {
       if (account.data && lodash.isEqual(account.data, opts.data)) {
         resolve(account)
       } else if (!account.data) {
-        accountsModel.update({data: opts.data}, {where: {id: opts.id}})
+        accountsModel.update({data: opts.data}, {where: {id: opts.id}, returning: true})
         .then((account) => {
-          resolve(account)
+          resolve(account[1][0])
         })
         .catch((err) => {
           reject(err)
