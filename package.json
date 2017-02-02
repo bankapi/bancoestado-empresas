@@ -20,6 +20,7 @@
     "pg-hstore": "^2.3.2",
     "sequelize": "^3.30.0",
     "sequelize-cli": "^2.5.1",
-    "through2": "^2.0.3"
+    "through2": "^2.0.3",
+    "validator": "^6.2.1"
   }
 }
