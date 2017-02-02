@@ -12,6 +12,7 @@
     "async": "^2.1.4",
     "co": "^4.6.0",
     "html-tokenize": "^2.0.0",
+    "inquirer": "^3.0.1",
     "lodash": "^4.17.4",
     "nightmare": "^2.9.1",
     "nightmare-iframe-manager": "0.0.4",

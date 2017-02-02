@@ -1,142 +1,320 @@
 'use strict'
 
-const Nightmare = require('nightmare')
-require('nightmare-iframe-manager')(Nightmare)
-require('nightmare-download-manager')(Nightmare)
-const _ = require('lodash')
-const path = require('path')
-const co = require('co')
-const nightmare = Nightmare({
-  show: true,
-  openDevTools: true
-})
+const inquirer = require('inquirer')
+const validators = require('./lib/data/validators')
+const controllers = require('./lib/data/controllers')
+const models = require('./lib/data/models')
+const getAndProcessTransactions = require('./lib/getAndProcessTransactions')
+const runServer = require('./lib/runServerForAccount')
 
-// Format date according to banco estado
-let date = new Date()
-let month = date.getMonth() > 8 ? date.getMonth() + 1 : '0' + (date.getMonth() + 1)
-let day = date.getDate() > 9 ? date.getDate() : '0' + date.getDate()
-let today = day + '/' + month + '/' + date.getFullYear()
+// Start CLI prompter
+welcome()
 
-// transaction type
-let transactionType = 'outgoing'
-
-nightmare.on('download', function (state, downloadItem) {
-  if (state === 'started') {
-    nightmare.emit('download', path.resolve('./downloads') + '/' + transactionType + '/' + _.now() + '.html', downloadItem)
-  }
-})
-
-// generator functions
-let login = function* () {
-  let result = yield nightmare
-  .goto('https://personas.bancoestado.cl/bancoestado/CajaLoginLocal.Html')
-  .wait('input[id="chkEmpresas"]')
-  .click('input[id="chkEmpresas"]')
-  .insert('input[id="CustPermIDAux"]', '76373918K')
-  .insert('input[id="CustLoginIDAux"]', '157715003')
-  .insert('input[id="SignonPswdAux"]', 'TnPs50G5')
-  .click('input[id="enviar"]')
-  .wait('frame[name="left"]')
-  .enterIFrame('frame[name="left"]')
-  .wait('#ntMenu0nb')
-  .click('#ntMenu0nb')
-  .click('a[href*="bancoestado/process.asp?MID=3106"]')
-  .exitIFrame()
-  .enterIFrame('frame[name="main"]')
-  .wait('#hdnFechaI')
-  .exists('#hdnFechaI')
-  .then((exists) => {
-    if (exists) {
-      return true
-    } else {
-      throw new Error('login:error')
+function welcome () {
+  let question = [{
+    type: 'list',
+    name: 'welcome',
+    message: 'What do you want to do?',
+    choices: [
+      'Create user',
+      'Create api key for user',
+      'Show user',
+      'Show account',
+      'Update account credentials',
+      'Crawl and save transactions for account',
+      'Run server for account',
+      'Exit'
+    ]
+  }]
+  inquirer.prompt(question)
+  .then((answer) => {
+    switch (answer.welcome) {
+      case 'Create user':
+        createUser()
+        break
+      case 'Create api key for user':
+        createApiKeyForUser()
+        break
+      case 'Show user':
+        showUser()
+        break
+      case 'Show account':
+        showAccount()
+        break
+      case 'Update account credentials':
+        updateAccountCredentials()
+        break
+      case 'Crawl and save transactions for account':
+        crawlAndSaveTransactionsForAccount()
+        break
+      case 'Run server for account':
+        runServerForAccount()
+        break
+      default:
+        process.exit()
     }
   })
-
-  return result
 }
 
-let getTransactions = function* (type) {
-  type = type === 'outgoing' ? '1' : '2'
-  let result = yield nightmare
-  .evaluate(function (query) {
-    // now we're executing inside the browser scope.
-    document.querySelector('input[name="hdnFechaI"]').removeAttribute('disabled')
-    document.querySelector('input[name="hdnFechaT"]').removeAttribute('disabled')
-    let init = document.querySelector('input[name="hdnFechaI"]')
-    init.value = query
-    let end = document.querySelector('input[name="hdnFechaT"]')
-    end.value = query
-  }, today)
-  .select('select[name="TipoCart"]', type)
-  .click('input[name="Continuar"]')
-  .wait(1000) // this step should be done according to some reference on the site, not an arbitrary time..maybe request ended?
-  .exists('img[src="imagesEmpresas/boton_salvar.gif"]')
-  .then((exists) => {
-    if (!exists) {
-      return nightmare
-      .click('img[src="ImagesPersonas/boton_volver_nar.gif"]')
-      .wait('#hdnFechaI')
-      .then(() => {
-        // no transactions
-        return false
+function createUser () {
+  let question = [{
+    type: 'input',
+    name: 'email',
+    message: 'Enter user email',
+    validate: (value) => {
+      if (validators.isEmail(value)) {
+        return true
+      }
+      return 'Please enter a valid email'
+    }
+  }, {
+    type: 'input',
+    name: 'rutCompany',
+    message: 'Enter company RUT',
+    validate: (value) => {
+      if (validators.isChileRut(value)) {
+        return true
+      }
+      return 'Please enter a valid RUT: xxxxxx-x'
+    }
+  }, {
+    type: 'input',
+    name: 'rutUser',
+    message: 'Enter user RUT',
+    validate: (value) => {
+      if (validators.isChileRut(value)) {
+        return true
+      }
+      return 'Please enter a valid RUT: xxxxxx-x'
+    }
+  }, {
+    type: 'password',
+    name: 'password',
+    message: 'Enter account password'
+  }]
+  inquirer.prompt(question)
+  .then((answer) => {
+    let opts = {
+      email: answer.email,
+      credentials: {
+        rutCompany: answer.rutCompany,
+        rutUser: answer.rutUser,
+        password: answer.password
+      }
+    }
+    controllers.users.create(opts)
+    .then((user) => {
+      console.log(`
+***** CREATED USER *****
+${JSON.stringify(user)}
+***** STORE API KEY CREDENTIALS IN A SAFE PLACE *****`)
+      process.exit()
+    })
+    .catch((err) => {
+      console.log('error: ', err)
+      process.exit()
+    })
+  })
+}
+
+function createApiKeyForUser () {
+  let question = [{
+    type: 'input',
+    name: 'email',
+    message: 'Enter user email',
+    validate: (value) => {
+      if (validators.isEmail(value)) {
+        return true
+      }
+      return 'Please enter a valid email'
+    }
+  }]
+  inquirer.prompt(question)
+  .then((answer) => {
+    models.Users.findOne({where: answer})
+    .then((user) => {
+      models.ApiKeys.findOne({where: {UserId: user.id}})
+      .then((apikey) => {
+        controllers.apiKeys.add({id: apikey.id})
+        .then((value) => {
+          console.log(`
+***** CREATED APIKEY FOR USER ${answer.email} *****
+${JSON.stringify(value)}
+***** STORE API KEY CREDENTIALS IN A SAFE PLACE *****`)
+          process.exit()
+        })
+        .catch((err) => {
+          console.log('error: ', err)
+        })
       })
-    } else {
-      return true
+      .catch((err) => {
+        console.log('error: ', err)
+      })
+    })
+    .catch((err) => {
+      console.log('error: ', err)
+    })
+  })
+}
+
+function showUser () {
+  let question = [{
+    type: 'input',
+    name: 'email',
+    message: 'Enter user email',
+    validate: (value) => {
+      if (validators.isEmail(value)) {
+        return true
+      }
+      return 'Please enter a valid email'
     }
+  }]
+  inquirer.prompt(question)
+  .then((answer) => {
+    models.Users.findOne({where: answer})
+    .then((user) => {
+      console.log(`
+***** USER ${answer.email} *****
+${JSON.stringify(user)}
+*****`)
+      welcome()
+    })
+    .catch((err) => {
+      console.log('error: ', err)
+    })
   })
-
-  return result
 }
 
-let downloadTransactions = function* (doIt) {
-  if (!doIt) {
-    // nothing to download
-    return true
-  }
-
-  let result = yield nightmare
-  .downloadManager()
-  .wait('img[src="imagesEmpresas/boton_salvar.gif"]')
-  .click('img[src="imagesEmpresas/boton_salvar.gif"]')
-  .waitDownloadsComplete()
-  .click('input[name="volver"]')
-  .wait('#hdnFechaI')
-  .then(() => {
-    return true
+function showAccount () {
+  let question = [{
+    type: 'input',
+    name: 'email',
+    message: 'Enter user email',
+    validate: (value) => {
+      if (validators.isEmail(value)) {
+        return true
+      }
+      return 'Please enter a valid email'
+    }
+  }]
+  inquirer.prompt(question)
+  .then((answer) => {
+    models.Users.findOne({where: answer})
+    .then((user) => {
+      models.Accounts.findOne({where: {UserId: user.id}})
+      .then((account) => {
+        console.log(`
+***** ACCOUNT FOR USER ${answer.email} *****
+${JSON.stringify(account)}
+*****`)
+        welcome()
+      })
+      .catch((err) => {
+        console.log('error: ', err)
+      })
+    })
+    .catch((err) => {
+      console.log('error: ', err)
+    })
   })
-
-  return result
 }
 
-let ender = function* () {
-  return yield nightmare.end()
+function updateAccountCredentials () {
+  let question = [{
+    type: 'input',
+    name: 'accountId',
+    message: 'Enter account id'
+  }, {
+    type: 'input',
+    name: 'rutCompany',
+    message: 'Enter company RUT',
+    validate: (value) => {
+      if (validators.isChileRut(value)) {
+        return true
+      }
+      return 'Please enter a valid RUT: xxxxxx-x'
+    }
+  }, {
+    type: 'input',
+    name: 'rutUser',
+    message: 'Enter user RUT',
+    validate: (value) => {
+      if (validators.isChileRut(value)) {
+        return true
+      }
+      return 'Please enter a valid RUT: xxxxxx-x'
+    }
+  }, {
+    type: 'password',
+    name: 'password',
+    message: 'Enter account password'
+  }]
+  inquirer.prompt(question)
+  .then((answer) => {
+    let newCredentials = {
+      rutCompany: answer.rutCompany,
+      rutUser: answer.rutUser,
+      password: answer.password
+    }
+    models.Accounts.update({credentials: newCredentials}, {where: {id: answer.accountId}, returning: true})
+    .then((account) => {
+      console.log(`
+***** UPDATED ACCOUNT ID ${answer.accountId} *****
+${JSON.stringify(account[1][0])}
+*****`)
+      welcome()
+    })
+    .catch((err) => {
+      console.log('error: ', err)
+    })
+  })
 }
 
-// run generators
-co(login)
-.then(() => {
-  co(getTransactions(transactionType))
-  .then((result) => {
-    co(downloadTransactions(result))
-    .then(() => {
-      transactionType = 'incoming'
-      co(getTransactions(transactionType))
-      .then((result) => {
-        co(downloadTransactions(result))
-        .then(() => {
-          co(ender)
-          .then(() => {
-            console.log('done')
-          }, onError)
-        }, onError)
-      }, onError)
-    }, onError)
-  }, onError)
-}, onError)
+function crawlAndSaveTransactionsForAccount () {
+  let question = [{
+    type: 'input',
+    name: 'accountId',
+    message: 'Enter account id'
+  }]
+  inquirer.prompt(question)
+  .then((answer) => {
+    models.Accounts.findById(answer.accountId)
+    .then((account) => {
+      let opts = {
+        accountId: account.id,
+        rutCompany: account.credentials.rutCompany,
+        rutUser: account.credentials.rutUser,
+        password: account.credentials.password
+      }
+      getAndProcessTransactions(opts)
+      .then((value) => {
+        process.exit()
+      })
+      .catch((err) => {
+        console.log('error: ', err)
+      })
+    })
+    .catch((err) => {
+      console.log('error: ', err)
+    })
+  })
+}
 
-// error handler
-function onError (error) {
-  console.log(error)
-  co(ender)
+function runServerForAccount () {
+  let question = [{
+    type: 'input',
+    name: 'accountId',
+    message: 'Enter account id'
+  }]
+  inquirer.prompt(question)
+  .then((answer) => {
+    runServer(answer.accountId)
+    .then((value) => {
+      console.log(`***** RUNNING SERVER AT ${value.server} FOR ACCOUNT ${value.account} *****`)
+      process.exit()
+    })
+    .catch((err) => {
+      console.log('error: ', err)
+    })
+  })
 }
