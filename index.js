@@ -5,7 +5,7 @@ const validators = require('./lib/data/validators')
 const controllers = require('./lib/data/controllers')
 const models = require('./lib/data/models')
 const getAndProcessTransactions = require('./lib/getAndProcessTransactions')
-const runServer = require('./lib/runServerForAccount')
+const runServerAndCrawl = require('./lib/runServerAndCrawlerForAccount')
 
 // Start CLI prompter
 welcome()
@@ -308,7 +308,7 @@ function runServerForAccount () {
   }]
   inquirer.prompt(question)
   .then((answer) => {
-    runServer(answer.accountId)
+    runServerAndCrawl(answer.accountId)
     .then((value) => {
       console.log(`***** RUNNING SERVER AT ${value.server} FOR ACCOUNT ${value.account} *****`)
       process.exit()
