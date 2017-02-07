@@ -111,7 +111,7 @@ ${JSON.stringify(user)}
       process.exit()
     })
     .catch((err) => {
-      console.log('error: ', err)
+      console.error('error: ', err)
       process.exit()
     })
   })
@@ -144,15 +144,15 @@ ${JSON.stringify(value)}
           process.exit()
         })
         .catch((err) => {
-          console.log('error: ', err)
+          console.error('error: ', err)
         })
       })
       .catch((err) => {
-        console.log('error: ', err)
+        console.error('error: ', err)
       })
     })
     .catch((err) => {
-      console.log('error: ', err)
+      console.error('error: ', err)
     })
   })
 }
@@ -180,7 +180,7 @@ ${JSON.stringify(user)}
       welcome()
     })
     .catch((err) => {
-      console.log('error: ', err)
+      console.error('error: ', err)
     })
   })
 }
@@ -210,11 +210,11 @@ ${JSON.stringify(account)}
         welcome()
       })
       .catch((err) => {
-        console.log('error: ', err)
+        console.error('error: ', err)
       })
     })
     .catch((err) => {
-      console.log('error: ', err)
+      console.error('error: ', err)
     })
   })
 }
@@ -265,7 +265,7 @@ ${JSON.stringify(account[1][0])}
       welcome()
     })
     .catch((err) => {
-      console.log('error: ', err)
+      console.error('error: ', err)
     })
   })
 }
@@ -291,11 +291,11 @@ function crawlAndSaveTransactionsForAccount () {
         process.exit()
       })
       .catch((err) => {
-        console.log('error: ', err)
+        console.error('error: ', err)
       })
     })
     .catch((err) => {
-      console.log('error: ', err)
+      console.error('error: ', err)
     })
   })
 }
@@ -314,7 +314,7 @@ function runServerForAccount () {
       process.exit()
     })
     .catch((err) => {
-      console.log('error: ', err)
+      console.error('error: ', err)
     })
   })
 }
