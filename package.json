@@ -4,8 +4,8 @@
   "description": "Crawl bancoestado-empresas and serve retrieved data",
   "main": "index.js",
   "repository": {
-   "type": "git",
-   "url": "https://bitbucket.org/jaime-ez/bankapi-bancoestado-empresas"
+    "type": "git",
+    "url": "https://bitbucket.org/jaime-ez/bankapi-bancoestado-empresas"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -26,6 +26,7 @@
     "koa-router": "^5.4.0",
     "lodash": "^4.17.4",
     "nightmare": "^2.9.1",
+    "nightmare-download-manager": "^0.2.4",
     "nightmare-iframe-manager": "0.0.4",
     "node-uuid": "^1.4.7",
     "pg": "^6.1.2",
