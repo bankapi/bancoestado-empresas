@@ -1,2 +1,3 @@
 node_modules/
 lib/data/sequelize
+lib/data/config/config.json
