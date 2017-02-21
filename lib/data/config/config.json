@@ -1,8 +1,8 @@
 {
   "development": {
-    "username": "jaime",
-    "password": "password",
-    "database": "bankapi",
+    "username": "root",
+    "password": null,
+    "database": "database_dev",
     "host": "127.0.0.1",
     "dialect": "postgres"
   },
