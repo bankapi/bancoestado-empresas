@@ -1,10 +1,15 @@
 {
   "name": "bankapi-bancoestado-empresas",
   "version": "1.0.0",
-  "description": "Crawl bancoestado-empresas and retrieve data",
+  "description": "Crawl bancoestado-empresas and serve retrieved data",
   "main": "index.js",
+  "repository": {
+   "type": "git",
+   "url": "https://bitbucket.org/jaime-ez/bankapi-bancoestado-empresas"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
   },
   "author": "Jaime Echegaray Zipper",
   "license": "ISC",
