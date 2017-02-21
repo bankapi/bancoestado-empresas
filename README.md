@@ -21,8 +21,9 @@ Then execute:
 - `cd lib/data`
 - `cp config/config-example.json config/config.json`  
 - `nano config/config.json` : enter database credentials  
-- `../../node_modules/.bin/sequelize db:migrate`  
-- `cd ../..`
+- `cd ../..`  
+- `node_modules/.bin/sequelize db:migrate`  
+- `mkdir downloads`  
 - `mkdir downloads/incoming && mkdir downloads/outgoing`  
 - `npm start`  
 
