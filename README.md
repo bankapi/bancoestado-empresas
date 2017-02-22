@@ -16,8 +16,8 @@ You need to have Xvfb installed to run nightmare on headless mode:
 
 Then execute:  
 
-- `git clone git@bitbucket.org:jaime-ez/bankapi-bancoestado-empresas.git`  
-- `cd bankapi-bancoestado-empresas && npm install`  
+- `git clone git@github.com:bankapi/bancoestado-empresas.git`  
+- `cd bancoestado-empresas && npm install`  
 - `cd lib/data`
 - `cp config/config-example.json config/config.json`  
 - `nano config/config.json` : enter database credentials  
